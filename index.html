@@ -40,7 +40,7 @@ p{margin:0 0 14px;line-height:1.6;color:rgba(246,233,215,.82);font-size:1.05rem}
 .card .art .ex{font-size:.85rem;letter-spacing:3px;opacity:.9;margin-top:2px}
 .card .art .st{position:absolute;top:6px;font-style:normal;color:rgba(255,255,255,.55);letter-spacing:6px;font-size:.9rem;animation:stm 2.6s ease-in-out infinite}
 @keyframes stm{0%{transform:translateY(8px);opacity:0}50%{opacity:.8}100%{transform:translateY(-6px);opacity:0}}
-.mus{right:62px}
+.mus{right:12px}
 .card.sel{background:linear-gradient(145deg,rgba(156,24,56,.65),rgba(94,12,34,.65));border-color:var(--rose);transform:scale(1.04);box-shadow:0 0 0 2px rgba(244,182,194,.4),0 12px 30px rgba(156,24,56,.5)}
 .reveal{opacity:0;max-height:0;overflow:hidden;transition:all .6s}
 .reveal.on{opacity:1;max-height:200px}
@@ -69,13 +69,13 @@ p{margin:0 0 14px;line-height:1.6;color:rgba(246,233,215,.82);font-size:1.05rem}
 </head>
 <body>
 <div class="bg"></div><div id="fx"></div>
-<button class="snd" id="snd" aria-label="Sonido">🔊</button>
-<button class="snd mus" id="mus" aria-label="Música de fondo">🎵</button>
+<button class="snd mus" id="mus" aria-label="Música de fondo">▶️</button>
 
 <section class="screen" id="s-start">
   <h1>Hola, Milu ❤️</h1>
   <p class="sub">Alexander preparó algo especial para ti...</p>
   <p class="small">No te voy a contar todo todavía...<br>primero tienes que descubrirlo. 👀❤️</p>
+  <a class="btn alt" href="https://open.spotify.com/search/dime%20que%20si%20jay%20wheeler" target="_blank" rel="noopener" style="text-decoration:none;font-size:1rem;padding:14px 20px">🎧 Ponle play a “Dime que sí” de fondo</a>
   <button class="btn pulse" data-go="s-intro">Empezar ✨</button>
 </section>
 
@@ -123,7 +123,7 @@ p{margin:0 0 14px;line-height:1.6;color:rgba(246,233,215,.82);font-size:1.05rem}
     <p>Una cita para conversar, reírnos, comer algo rico y simplemente disfrutar un momento juntos.</p>
     <p>Y sí... probablemente también para crear un recuerdo que podamos volver a contar después. ❤️</p>
     <p>Así que ahora ya sabes el plan:</p>
-    <p><b>Tú eliges el día.<br>Tú eliges la comida.<br>Y yo me encargo de que valga la pena.</b></p>
+    <p><b><span id="lDay"></span><br><span id="lFood"></span><br>Y yo me encargo de que valga la pena.</b></p>
     <p>¿Aceptas esta cita conmigo, Milu? ❤️</p>
     <p class="sig">— Alexander</p>
   </div>
@@ -140,18 +140,19 @@ p{margin:0 0 14px;line-height:1.6;color:rgba(246,233,215,.82);font-size:1.05rem}
   <button class="btn alt" id="restart">Volver a vivirlo ✨</button>
 </section>
 
-<div class="wm">Esta página web fue creada cariño por Alexander.</div>
+<audio id="bgm" src="cancion.mp3" loop preload="auto"></audio>
+<div class="wm">Esta página web fue creada con cariño por Alexander.</div>
 
 <script>
 // ✏️ Puedes cambiar las opciones de día aquí (texto libre) o dejar que se generen automáticamente.
 const DAYS_AUTO = true;
 const DAYS_MANUAL = ["Viernes","Sábado","Domingo","Otro día que prefieras"];
 const FOODS = [
-["🍲","Hotpot","🌶️🥬🍄","#b3261e,#4a0a12"],
-["🍜","Fideos de res","🥩🧅🌿","#a8541c,#3d1a0a"],
-["🍚","Arroz con carne estofada","🥩🥕🌾","#8a5a2b,#32200f"],
+["🍦","Helado","🍓🍫🍪","#c2557a,#3a0f22"],
+["🍔","Hamburguesa","🍟🧀🥬","#a8541c,#3d1a0a"],
+["🥡","Chifa","🥢🍚🥦","#b3261e,#3a0a10"],
 ["🌙","Bocadillos de la feria nocturna","🍢🥟🍡","#3b2a7a,#12082e"],
-["🥩","Barbacoa","🔥🌽🍖","#c2410c,#3a0f06"],
+["🥩","Parrilla","🔥🌽🍖","#c2410c,#3a0f06"],
 ["🍜","Ramen","🥚🍥🌱","#b8860b,#3a2706"]];
 
 let state = {day:null, food:null};
@@ -172,7 +173,7 @@ function tone(f=660, d=.25, v=.05){
   }catch(e){}
 }
 const chime = () => { tone(660); setTimeout(()=>tone(880,.35),110); };
-$('snd').onclick = () => { soundOn = !soundOn; $('snd').textContent = soundOn ? '🔊' : '🔇'; if(soundOn) chime(); };
+
 
 /* ---- música suave opcional (apagada por defecto) ---- */
 let musOn = false, musT = null, step = 0;
@@ -189,9 +190,15 @@ function pad(){
   }catch(e){}
 }
 $('mus').onclick = () => {
-  musOn = !musOn; $('mus').style.opacity = musOn ? 1 : .55; $('mus').textContent = musOn ? '🎶' : '🎵';
+  if(ytReady){ toggleYT(); return; }
+  musOn = !musOn; $('mus').style.opacity = musOn ? 1 : .55; $('mus').textContent = musOn ? '⏸️' : '▶️';
   clearInterval(musT); if(musOn){ pad(); musT = setInterval(pad, 900); }
 };
+/* ---- canción mp3 (archivo cancion.mp3 junto a index.html) ---- */
+var bgm = $('bgm'), ytOn = false, ytReady = true;
+function setMusIcon(){ $('mus').textContent = ytOn ? '⏸️' : '▶️'; $('mus').style.opacity = ytOn ? 1 : .55; }
+function ytPlay(){ try{ bgm.volume = .7; var p = bgm.play(); if(p && p.then) p.then(function(){ ytOn = true; setMusIcon(); }).catch(function(){}); }catch(e){} }
+function toggleYT(){ try{ if(bgm.paused){ var p = bgm.play(); if(p && p.catch) p.catch(function(){}); ytOn = true; } else { bgm.pause(); ytOn = false; } }catch(e){} setMusIcon(); }
 $('mus').style.opacity = .55;
 
 /* ---- ambiente ---- */
@@ -226,7 +233,7 @@ function show(id){
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-go]'); if(!b) return;
-  chime(); show(b.dataset.go);
+  chime(); if(b.closest('#s-start')) ytPlay(); show(b.dataset.go);
 });
 
 function enter(id){
@@ -237,6 +244,8 @@ function enter(id){
     later(()=>$('openWrap').classList.add('on'), 600+4*1700+1500);
   }
   if(id==='s-letter'){
+    $('lDay').textContent = state.day || 'el día que quieras';
+    $('lFood').textContent = state.food || 'lo que se te antoje';
     later(()=>{ $('letter').classList.add('on'); tone(520,.4); }, 300);
     later(()=>$('ans').classList.add('on'), 3500);
   }
